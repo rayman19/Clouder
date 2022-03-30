@@ -1,8 +1,14 @@
+from cgitb import text
 from cloudant import Cloudant
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, url_for, redirect
 import atexit
 import os
 import json
+import xml.etree.ElementTree as ET
+
+
+tree = ET.parse('catalog.xml')
+root = tree.getroot()
 
 app = Flask(__name__, static_url_path='')
 
@@ -34,50 +40,51 @@ elif os.path.isfile('vcap-local.json'):
         client = Cloudant(user, password, url=url, connect=True)
         db = client.create_database(db_name, throw_on_exists=False)
 
-# On IBM Cloud Cloud Foundry, get the port number from the environment variable PORT
-# When running this app on the local machine, default the port to 8000
 port = int(os.getenv('PORT', 8000))
 
 @app.route('/')
-def root():
-    return app.send_static_file('index.html')
+def index():
+    tree = ET.parse('catalog.xml')
+    root = tree.getroot()
+    return render_template('index.html', data=root, len=len(root))
 
-# /* Endpoint to greet and add a new visitor to database.
-# * Send a POST request to localhost:8000/api/visitors with body
-# * {
-# *     "name": "Bob"
-# * }
-# */
-@app.route('/api/visitors', methods=['GET'])
-def get_visitor():
-    if client:
-        return jsonify(list(map(lambda doc: doc['name'], db)))
-    else:
-        print('No database')
-        return jsonify([])
+@app.route('/delete/<int:id>')
+def delete(id):
+    root.remove(root[id])
+    with open('catalog.xml', 'wb') as f:
+        tree.write(f)
+        return redirect(url_for('index'))
 
-# /**
-#  * Endpoint to get a JSON array of all the visitors in the database
-#  * REST API example:
-#  * <code>
-#  * GET http://localhost:8000/api/visitors
-#  * </code>
-#  *
-#  * Response:
-#  * [ "Bob", "Jane" ]
-#  * @return An array of all the visitor names
-#  */
-@app.route('/api/visitors', methods=['POST'])
-def put_visitor():
-    user = request.json['name']
-    data = {'name':user}
-    if client:
-        my_document = db.create_document(data)
-        data['_id'] = my_document['_id']
-        return jsonify(data)
-    else:
-        print('No database')
-        return jsonify(data)
+@app.route('/insert', methods=["POST"])
+def insert():
+    name = request.form.get('name')
+    cpu = request.form.get('cpu')
+    ram = request.form.get('ram')
+    hdd = request.form.get('hdd')
+    price = request.form.get('price')
+
+    server = ET.Element("server")
+
+    name_elem = ET.SubElement(server, 'name')
+    name_elem.text = name
+
+    cpu_elem = ET.SubElement(server, 'cpu')
+    cpu_elem.text = cpu
+
+    ram_elem = ET.SubElement(server, "ram")
+    ram_elem.text = ram
+
+    hdd_elem = ET.SubElement(server, "hdd")
+    hdd_elem.text = hdd
+
+    price_elem = ET.SubElement(server, "price")
+    price_elem.text = price
+
+    root.insert(len(root), server)
+
+    with open('catalog.xml', 'wb') as f:
+        tree.write(f)
+        return redirect(url_for('index'))
 
 @atexit.register
 def shutdown():

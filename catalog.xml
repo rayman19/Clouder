@@ -1,0 +1,30 @@
+<catalog>
+    <server>
+        <name>KVM SAS &#1057;&#1090;&#1072;&#1088;&#1090;</name>
+        <cpu>1</cpu>
+        <ram>1</ram>
+        <hdd>30</hdd>
+        <price>185</price>
+    </server>
+        <server>
+        <name>KVM SSD &#1057;&#1090;&#1072;&#1088;&#1090;</name>
+        <cpu>1</cpu>
+        <ram>1</ram>
+        <hdd>20</hdd>
+        <price>255</price>
+    </server>
+        <server>
+        <name>&#1057;&#1090;&#1072;&#1088;&#1090; KVM NVMe</name>
+        <cpu>1</cpu>
+        <ram>1</ram>
+        <hdd>20</hdd>
+        <price>295</price>
+    </server>
+        <server>
+        <name>&#1057;&#1090;&#1072;&#1088;&#1090; Plus NVMe</name>
+        <cpu>1</cpu>
+        <ram>2</ram>
+        <hdd>30</hdd>
+        <price>392</price>
+    </server>
+</catalog>
